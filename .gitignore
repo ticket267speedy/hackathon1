@@ -9,3 +9,4 @@ target/
 .vscode/
 *.iml
 .DS_Store
+.env.local

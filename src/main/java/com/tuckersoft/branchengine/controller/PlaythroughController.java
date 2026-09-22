@@ -1,5 +1,9 @@
 package com.tuckersoft.branchengine.controller;
 import com.tuckersoft.branchengine.dto.*;
+import com.tuckersoft.branchengine.model.Decision;
+import com.tuckersoft.branchengine.model.RealityLog;
+import com.tuckersoft.branchengine.repository.DecisionRepository;
+import com.tuckersoft.branchengine.repository.RealityLogRepository;
 import com.tuckersoft.branchengine.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +16,8 @@ import java.util.List;
 public class PlaythroughController {
     private final PlaythroughService svc;
     private final DecisionService decisionSvc;
+    private final DecisionRepository decisionRepo;
+    private final RealityLogRepository logRepo;
     private boolean adm(Authentication a){return a.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(x -> x.equals("ROLE_ADMIN"));}
     @PostMapping public ResponseEntity<PlaythroughResponse> c(Authentication a,@Valid @RequestBody PlaythroughRequest r){
         return ResponseEntity.status(HttpStatus.CREATED).body(svc.create(r,a.getName(),adm(a)));
@@ -27,5 +33,14 @@ public class PlaythroughController {
     @GetMapping("/{id}/decisions")
     public ResponseEntity<List<DecisionResponse>> history(@PathVariable Long id, Authentication a){
         return ResponseEntity.ok(decisionSvc.history(id,a.getName(),adm(a)));
+    }
+    @GetMapping("/{id}/logs")
+    public ResponseEntity<List<RealityLogResponse>> logs(@PathVariable Long id, Authentication a){
+        // valida ownership llamando al servicio
+        svc.get(id, a.getName(), adm(a));
+        List<Long> ids = decisionRepo.findByPlaythroughIdOrderByDecidedAtAsc(id).stream().map(Decision::getId).toList();
+        List<RealityLogResponse> out = ids.isEmpty() ? List.of()
+                : logRepo.findByDecisionIdInOrderByCreatedAtAsc(ids).stream().map(RealityLogResponse::from).toList();
+        return ResponseEntity.ok(out);
     }
 }
