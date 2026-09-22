@@ -10,3 +10,6 @@ target/
 *.iml
 .DS_Store
 .env.local
+error.log
+*.log
+*.class
