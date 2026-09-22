@@ -21,7 +21,6 @@ public class DecisionService {
     private final StoryNodeRepository nodeRepo;
     private final ApplicationEventPublisher publisher;
 
-    // ─── Reglas exactas del PDF (en orden de precedencia) ───
     public static BranchType classifyBranch(String text) {
         String t = text == null ? "" : text.trim().replaceAll("\\s+", " ").toLowerCase();
         if (t.equals("stay") || t.equals("demand")) return BranchType.BRANCH;
@@ -89,7 +88,7 @@ public class DecisionService {
             next = nodeRepo.findByNodeKey(nextKey)
                     .orElseThrow(() -> new BadRequestException("Nodo destino no existe: " + nextKey));
         } else if (bt == BranchType.REFUSAL) {
-            next = current;  // una negativa no avanza
+            next = current;
         }
 
         boolean timedOut = Boolean.TRUE.equals(req.getTimedOut());
@@ -129,6 +128,7 @@ public class DecisionService {
                 .currentNodeKey(next.getNodeKey()).build();
     }
 
+    @Transactional(readOnly = true)
     public List<DecisionResponse> history(Long playthroughId, String authUser, boolean isAdmin) {
         Playthrough p = playthroughRepo.findById(playthroughId)
                 .orElseThrow(() -> new NotFoundException("Partida no encontrada: " + playthroughId));
@@ -137,6 +137,7 @@ public class DecisionService {
         return decisionRepo.findByPlaythroughIdOrderByDecidedAtAsc(playthroughId)
                 .stream().map(DecisionResponse::from).toList();
     }
+    @Transactional(readOnly = true)
     public DecisionResponse byId(Long id, String authUser, boolean isAdmin) {
         Decision d = decisionRepo.findById(id).orElseThrow(() -> new NotFoundException("Decision no encontrada"));
         if (!isAdmin && !d.getPlaythrough().getUser().getUsername().equals(authUser))

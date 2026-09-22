@@ -26,11 +26,13 @@ public class PlaythroughService {
                 .status(PlaythroughStatus.IN_PROGRESS).score(0).totalDecisions(0).build();
         repo.save(p); return PlaythroughResponse.from(p);
     }
+    @Transactional(readOnly = true)
     public List<PlaythroughResponse> list(String authUser, boolean isAdmin) {
         if (isAdmin) return repo.findAll().stream().map(PlaythroughResponse::from).toList();
         User me = userRepo.findByUsername(authUser).orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
         return repo.findByUserIdOrderByStartedAtDesc(me.getId()).stream().map(PlaythroughResponse::from).toList();
     }
+    @Transactional(readOnly = true)
     public PlaythroughResponse get(Long id, String authUser, boolean isAdmin) {
         Playthrough p = repo.findById(id).orElseThrow(() -> new NotFoundException("Partida no encontrada: " + id));
         if (!isAdmin && !p.getUser().getUsername().equals(authUser)) throw new ForbiddenException("Esta partida no es tuya");
