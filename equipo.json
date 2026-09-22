@@ -1,8 +1,7 @@
 {
-  "equipo": "G00",
+  "equipo": "G666",
   "integrantes": [
-    { "nombre": "Nombre Apellido", "codigo": "CODIGO UTEC" },
-    { "nombre": "Nombre Apellido", "codigo": "CODIGO UTEC" },
-    { "nombre": "Nombre Apellido", "codigo": "CODIGO UTEC" }
+    { "nombre": "Luis Huapaya", "codigo": "202220394" },
+    { "nombre": "Matias Caceres", "codigo": "202510370" }
   ]
 }
